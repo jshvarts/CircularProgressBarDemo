@@ -1,61 +1,103 @@
 package com.jshvarts.circularprogressbardemo
 
+import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
+import android.content.res.TypedArray
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 
 private const val STROKE_THICKNESS_FRACTION = 0.075f
-private const val COLOR_DEFAULT_BACKGROUND = 0xffe1e7e9 // non-transparent
-private const val COLOR_DEFAULT_FOREGROUND = 0xfff36c60
+private const val TEXT_SIZE_FRACTION = 0.25f
 private const val MAX_PROGRESS = 100f
+private const val ANIM_DURATION_MS = 800L
 
 class CircularProgressBar @JvmOverloads constructor(context: Context,
                                                    attrs: AttributeSet? = null,
                                                    defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
+    private var backgroundColor: Int? = null
+
+    private var foregroundColor: Int? = null
+
+    private var textColor: Int? = null
 
     private var strokeThickness: Float = 0f
 
+    private var progressTextSize: Float = 0f
+
     private val circleBounds = RectF()
 
-    var progress = 0f
-        set(progress) {
-            field = progress
-            invalidate() // will call onDraw()
+    private val progressTextBounds = Rect()
+
+    private var progress = 0f
+
+    private val progressValueAnimator = ValueAnimator.ofFloat(0f, progress).apply {
+        duration = ANIM_DURATION_MS
+        interpolator = AccelerateDecelerateInterpolator()
+        addUpdateListener {
+            progress = animatedValue as Float
+            invalidate()
         }
+    }
 
     private val paint = Paint().apply {
         flags = Paint.ANTI_ALIAS_FLAG // ensure smooth edges
-        style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
+        textAlign = Paint.Align.CENTER
+    }
+
+    private lateinit var typedArray: TypedArray
+
+    init {
+        attrs?.let {
+            val typedArray = context.obtainStyledAttributes(it,
+                    R.styleable.CircularProgressBar, 0, 0)
+
+            backgroundColor = typedArray.getColor(
+                    R.styleable.CircularProgressBar_barBackgroundColor,
+                    Color.GRAY)
+
+            foregroundColor = typedArray.getColor(
+                    R.styleable.CircularProgressBar_barForegroundColor,
+                    Color.BLACK)
+
+            textColor = typedArray.getColor(
+                    R.styleable.CircularProgressBar_android_textColor,
+                    Color.BLACK)
+
+            typedArray.recycle()
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        paint.style = Paint.Style.STROKE
+
         // Background
         paint.apply {
             strokeWidth = strokeThickness
-            color = COLOR_DEFAULT_BACKGROUND.toInt()
+            color = backgroundColor!!
         }
         canvas.drawOval(circleBounds, paint)
 
         // Foreground
         val sweepAngle = progress / MAX_PROGRESS * 360
         println(sweepAngle)
-        paint.color = COLOR_DEFAULT_FOREGROUND.toInt()
+        paint.color = foregroundColor!!
         canvas.drawArc(circleBounds, 0f, sweepAngle, false, paint)
 
-
-        // TODO remove after debugging
+        val text = "${progress.toInt()}%"
         paint.apply {
-            strokeWidth = 1f
-            color = Color.BLACK
+            this.textSize = progressTextSize
+            style = Paint.Style.FILL
+            color = textColor!!
+            getTextBounds(text, 0, text.length, progressTextBounds)
         }
-        canvas.drawRect(circleBounds, paint)
+        val textHeight = progressTextBounds.height()
+
+        canvas.drawText(text, circleBounds.centerX(), circleBounds.centerY() + textHeight / 2, paint)
     }
 
     /**
@@ -78,5 +120,15 @@ class CircularProgressBar @JvmOverloads constructor(context: Context,
             right = centerX + halfOfStrokeWidth
             bottom = centerY + halfOfStrokeWidth
         }
+
+        progressTextSize = diameter * TEXT_SIZE_FRACTION
+    }
+
+    fun updateProgress(progress: Float) {
+        if (progressValueAnimator.isRunning) {
+            progressValueAnimator.cancel()
+        }
+        progressValueAnimator.setFloatValues(this.progress, progress)
+        progressValueAnimator.start()
     }
 }

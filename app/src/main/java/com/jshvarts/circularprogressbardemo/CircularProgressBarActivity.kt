@@ -12,7 +12,7 @@ class CircularProgressBarActivity : AppCompatActivity() {
         setContentView(R.layout.activity_circular_progress_bar)
 
         progressBar.setOnClickListener {
-            v -> (v as CircularProgressBar).progress = Random().nextInt(100).toFloat()
+            v -> (v as CircularProgressBar).updateProgress(Random().nextInt(100).toFloat())
         }
     }
 }
