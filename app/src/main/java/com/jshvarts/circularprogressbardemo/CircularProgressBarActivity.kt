@@ -2,11 +2,17 @@ package com.jshvarts.circularprogressbardemo
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import kotlinx.android.synthetic.main.activity_circular_progress_bar.*
+import java.util.*
 
 class CircularProgressBarActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(CircularProgressBar(this))
+        setContentView(R.layout.activity_circular_progress_bar)
+
+        progressBar.setOnClickListener {
+            v -> (v as CircularProgressBar).progress = Random().nextInt(100).toFloat()
+        }
     }
 }

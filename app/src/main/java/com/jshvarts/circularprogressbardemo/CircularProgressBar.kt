@@ -5,17 +5,27 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.util.AttributeSet
 import android.view.View
 
 private const val STROKE_THICKNESS_FRACTION = 0.075f
 private const val COLOR_DEFAULT_BACKGROUND = 0xffe1e7e9 // non-transparent
 private const val COLOR_DEFAULT_FOREGROUND = 0xfff36c60
+private const val MAX_PROGRESS = 100f
 
-class CircularProgressBar(context: Context) : View(context) {
+class CircularProgressBar @JvmOverloads constructor(context: Context,
+                                                   attrs: AttributeSet? = null,
+                                                   defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
 
     private var strokeThickness: Float = 0f
 
     private val circleBounds = RectF()
+
+    var progress = 0f
+        set(progress) {
+            field = progress
+            invalidate() // will call onDraw()
+        }
 
     private val paint = Paint().apply {
         flags = Paint.ANTI_ALIAS_FLAG // ensure smooth edges
@@ -34,8 +44,10 @@ class CircularProgressBar(context: Context) : View(context) {
         canvas.drawOval(circleBounds, paint)
 
         // Foreground
+        val sweepAngle = progress / MAX_PROGRESS * 360
+        println(sweepAngle)
         paint.color = COLOR_DEFAULT_FOREGROUND.toInt()
-        canvas.drawArc(circleBounds, 0f, 120f, false, paint)
+        canvas.drawArc(circleBounds, 0f, sweepAngle, false, paint)
 
 
         // TODO remove after debugging
@@ -66,6 +78,5 @@ class CircularProgressBar(context: Context) : View(context) {
             right = centerX + halfOfStrokeWidth
             bottom = centerY + halfOfStrokeWidth
         }
-
     }
 }
