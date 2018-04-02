@@ -25,14 +25,14 @@ class CircularProgressBar @JvmOverloads constructor(context: Context,
 
     private var progressTextSize: Float = 0f
 
+    // pre-allocate and reuse in onDraw()
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
     private val circleBounds = RectF()
 
     private val progressTextBounds = Rect()
 
     private var progress = 0f
-
-    // pre-allocate and reuse Paint in onDraw()
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val progressValueAnimator = ValueAnimator.ofFloat(0f, progress).apply {
         duration = ANIM_DURATION_MS
@@ -125,7 +125,7 @@ class CircularProgressBar @JvmOverloads constructor(context: Context,
     private fun drawProgressText(canvas: Canvas) {
         val text = "${progress.toInt()}%"
         paint.apply {
-            this.textSize = progressTextSize
+            textSize = progressTextSize
             style = Paint.Style.FILL
             color = textColor!!
             textAlign = Paint.Align.CENTER
