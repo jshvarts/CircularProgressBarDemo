@@ -15,12 +15,6 @@ private const val ANIM_DURATION_MS = 800L
 class CircularProgressBar @JvmOverloads constructor(context: Context,
                                                    attrs: AttributeSet? = null,
                                                    defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
-    private var backgroundColor: Int? = null
-
-    private var foregroundColor: Int? = null
-
-    private var textColor: Int? = null
-
     private var strokeThickness: Float = 0f
 
     private var progressTextSize: Float = 0f
@@ -42,6 +36,12 @@ class CircularProgressBar @JvmOverloads constructor(context: Context,
             invalidate()
         }
     }
+
+    private var backgroundColor: Int? = null
+
+    private var foregroundColor: Int? = null
+
+    private var textColor: Int? = null
 
     init {
         attrs?.let {
@@ -105,16 +105,16 @@ class CircularProgressBar @JvmOverloads constructor(context: Context,
 
     private fun drawBackground(canvas: Canvas) {
         paint.apply {
-            strokeWidth = strokeThickness
-            color = backgroundColor!!
+            backgroundColor?.let { color = it }
             style = Paint.Style.STROKE
+            strokeWidth = strokeThickness
         }
         canvas.drawOval(circleBounds, paint)
     }
 
     private fun drawForeground(canvas: Canvas) {
         paint.apply {
-            color = foregroundColor!!
+            foregroundColor?.let { color = it }
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -125,9 +125,9 @@ class CircularProgressBar @JvmOverloads constructor(context: Context,
     private fun drawProgressText(canvas: Canvas) {
         val text = "${progress.toInt()}%"
         paint.apply {
-            textSize = progressTextSize
+            textColor?.let { color = it }
             style = Paint.Style.FILL
-            color = textColor!!
+            textSize = progressTextSize
             textAlign = Paint.Align.CENTER
             getTextBounds(text, 0, text.length, progressTextBounds)
         }
